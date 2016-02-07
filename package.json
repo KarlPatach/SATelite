@@ -1,0 +1,14 @@
+{
+    "name": "sat-elite",
+    "version": "0.1.0",
+    "main": "server.js",
+    "dependencies": {
+        "express": "~4.11.0",
+        "ejs": "~2.1.4",
+        "cookie-session": "~1.1.0",
+        "body-parser": "~1.10.1"
+    },
+    "author": "PARIZOT Maxime, BARBEDOR Franck, KEMPF Simon, TREBERN Simon",
+    "license": "BSD",
+    "description": "Site web dédié à l'analyse de sentiments sur Tumblr, réalisé dans le cadre d'un projet de 3ème année à l'INSA de Rennes, avec pour tuteur M. Alexandru COSTAN"
+}
