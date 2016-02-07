@@ -4,6 +4,8 @@ var bodyParser = require('body-parser');
 
 var app = express();
 
+app.set('port', (process.env.PORT || 5000));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(cookieSession({
@@ -30,4 +32,6 @@ app.use(function(req, res, next){
     res.render('index.ejs', {liste: req.session.liste});
 });
 
-app.listen(process.env.PORT || 8080, '127.0.0.1');
+app.listen(app.get('port'), function() {
+    console.log('App is running, server is listening on port ', app.get('port'));
+});
