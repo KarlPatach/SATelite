@@ -1,0 +1,2 @@
+Débugger le getFeeling et getResults
+faire une petit interface stylée avec stylus
