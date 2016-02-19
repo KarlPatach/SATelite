@@ -8,8 +8,14 @@ html
 			h1= title
 		.container
 			.main-content
-				form(name='request-tag', method='post')
+				p Enter a tag:
 					input(type='text', name='tag')
+					br 
+					p Algorithm
+					select(name='aglo-choice')
+						option(value='basic') Basic
+						option(value='bdvanced') Advanced
 					input(type='submit', value='Analyze')
+
 		footer
-			p Running on Node.js with Express, Jade and Stylus
+			p Running on Node.js with Express, Jade, Stylus and Alexandru ♥
