@@ -1,14 +1,13 @@
-<<<<<<< HEAD
 Sentiment analysis on Tumblr posts
 
   What is it?
   -----------
-
+A sentiment analysis tool for tumblr
 
 
   The Latest Version
   ------------------
-
+0.0.1
 
 
   Documentation
@@ -18,7 +17,7 @@ Sentiment analysis on Tumblr posts
 
   Installation
   ------------
-
+unzip, launch 'app' with node.js, and go to localhost:8080; and voila!
 
   Licensing
   ---------
