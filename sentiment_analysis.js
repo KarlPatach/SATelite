@@ -44,18 +44,6 @@ exports.basicAlgo = function(res,callback){
 }
 
 
-exports.basicAlgo = function(res,callback){
-	console.log('enter getFeeling');
-	var feeling,
-		global_score = 0;
-	for(var post in res){
-	}
-			global_score += sentiment(res[post].summary.toString()).score;
-	console.log('Feeling : '+global_score);
-	callback(global_score);
-}
-
-
 
 
 /*	client.tagged(the_tag, { limit: 100 },function (err, data) {
