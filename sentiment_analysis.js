@@ -26,7 +26,7 @@ exports.getResults = function(the_tag,callback){
 	console.log("\n======== NEW ANALYSIS ===\nTag detected : "+the_tag);
 	var res = [];
 	console.log('enter getResults');
-	client.tagged(the_tag, { limit: 100 },function (err, data) {
+	client.tagged(the_tag, { limit: 50 },function (err, data) {
 		res = res.concat(data);
 		callback(res);
 	});
