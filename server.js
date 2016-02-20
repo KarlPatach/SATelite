@@ -1,10 +1,16 @@
 var express = require('express');
 var cookieSession = require('cookie-session');
 var bodyParser = require('body-parser');
+var fs = require('fs');
+var favicon = require('serve-favicon'); // Charge le middleware de favicon
 
 var app = express();
 
 app.set('port', (process.env.PORT || 5000));
+
+app.use(express.static(__dirname + '/static'));
+
+app.use(favicon(__dirname + '/static/img/favicon.png'))
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -14,24 +20,55 @@ app.use(cookieSession({
 }));
 
 app.use('/',function(req, res, next){
-    res.render('accueil.ejs');
+    res.redirect('/accueil');
 });
 
-app.use('/delete/:id', function(req, res, next) {
-    req.session.liste[req.params.id] = null;
+app.use('/analyse', function(req, res, next) {
+    if(req.query.tag != undefined) {
+        res.redirect("/analyse/"+req.query.tag);
+    } else {
+        next();
+    }
+});
+
+app.use('/analyse/:tag', function(req, res, next) {
+    traitement(req.params.tag);
     next();
 });
 
-app.use('/add', function(req, res, next) {
-    if(req.session.liste==undefined) req.session.liste = [];
-    req.session.liste[req.session.liste.length] = req.body.tache;
-    next();
-});
-
-app.use(function(req, res, next){
-    res.render('index.ejs', {liste: req.session.liste});
+app.use('/:page', function(req, res, next){
+    fs.access('views' + req.params.page +'.ejs', function (err) {
+    	if (err) {
+    	    res.status(404);
+    		console.error('404 : /' + req.params.page);
+    		res.render('404.ejs', {page : req.params.page});
+    		return;
+    	}
+    	res.render(req.params.page + ".ejs", req.query);
+    });
 });
 
 app.listen(app.get('port'), function() {
     console.log('App is running, server is listening on port ', app.get('port'));
 });
+
+function traitement(tag) {
+    var related = [{
+        "tag" : "cat", "weight" : 0.8,
+        "tag" : "cute", "weight" : 0.6,
+        "tag" : "kitten", "weight" : 0.5
+    }];
+    var influents = [{
+        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" = 0.89,
+        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" = 0.89,
+        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" = 0.89
+    }];
+    var picture = {"src" : "http://img.com/cat.png", "postUrl" : "http://blog.tumblr.com/post"}
+    var params = {
+        "tag" : tag,
+        "related" : related,
+        "influents" : influents,
+        "picture" : picture,
+    }
+    return params;
+}

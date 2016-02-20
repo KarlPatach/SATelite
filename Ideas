@@ -1,0 +1,16 @@
+Algorithme :
+Idée d'une librairie avec une interface qui permette d'ajouter facilement de nouveaux algorithmes
+
+Notre algorithme "avancé" :
+Pondération de l'importance d'un post en fonction :
+    - du nombre de likes d'un post
+    - du nombre de followers de l'utilisateur
+    - de l'activité de l'utilisateur (nombre de posts, dernière connexion, ..)
+
+Interface :
+Affichage de :
+    - Affichage de l'avis sur le post en clair
+    - Extraits des posts les plus influents
+    - Nuage de mots-clés (tags les plus liés au sujet ?)
+    - Image du post photo le plus influent / Slides des post photos les plus influents
+    - Graphiques de la positivité des posts
