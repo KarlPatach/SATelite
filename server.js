@@ -8,7 +8,8 @@ var app = express();
 
 app.set('port', (process.env.PORT || 5000));
 
-app.use(express.static(__dirname + '/static'));
+app.use(express.static(__dirname + '/static/img'));
+app.use(express.static(__dirname + '/static/tpl'));
 
 app.use(favicon(__dirname + '/static/img/favicon.png'))
 
