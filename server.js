@@ -32,8 +32,8 @@ app.get('/analyse', function(req, res, next) {
 });
 
 app.get('/analyse/:tag', function(req, res, next) {
-    traitement(req.params.tag);
-    next();
+    var params = traitement(req.params.tag);
+    res.render("analyse.ejs", params);
 });
 
 app.get('/:page', function(req, res, next){
