@@ -12,14 +12,21 @@
     </head>
     <body>
         <header>
-            <h1></h1>
+            <h1>
+                <img scr="/static/img/favicon.png" alt="logo SATÉlite">
+                SATÉlite
+            </h1>
             <form action="/analyse" method="get">
                 <input type="search" name="tag" placeholder="Tag"/>
                 <input type="submit" value="Submit"/>
             </form>
         </header>
         <section class="main">
+            <% if(tag != undefined) { %>
             
+            <h1>Tag : <%= i %></h1>
+            
+            <% } %>
         </section>
     </body>
 </html>
