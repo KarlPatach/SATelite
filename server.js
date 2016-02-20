@@ -19,7 +19,11 @@ app.use(cookieSession({
   secret: "SaT/élite"
 }));
 
-app.use('/analyse', function(req, res, next) {
+app.get('/',function(req, res, next){
+    res.redirect('/accueil');
+});
+
+app.get('/analyse', function(req, res, next) {
     if(req.query.tag != undefined) {
         res.redirect("/analyse/"+req.query.tag);
     } else {
@@ -27,12 +31,12 @@ app.use('/analyse', function(req, res, next) {
     }
 });
 
-app.use('/analyse/:tag', function(req, res, next) {
+app.get('/analyse/:tag', function(req, res, next) {
     traitement(req.params.tag);
     next();
 });
 
-app.use('/:page', function(req, res, next){
+app.get('/:page', function(req, res, next){
     fs.access(__dirname + '/views' + req.params.page +'.ejs', function (err) {
     	if (err) {
     	    res.status(404);
