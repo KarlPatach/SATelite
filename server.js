@@ -59,9 +59,9 @@ function traitement(tag) {
         "tag" : "kitten", "weight" : 0.5
     }];
     var influents = [{
-        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" = 0.89,
-        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" = 0.89,
-        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" = 0.89
+        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" : 0.89,
+        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" : 0.89,
+        "text" : "Lorem ipsum dolor sit amet", "url" : "http://wordpress.com", "likes" : 6580, "grade" : 0.89
     }];
     var picture = {"src" : "http://img.com/cat.png", "postUrl" : "http://blog.tumblr.com/post"}
     var params = {
