@@ -19,10 +19,6 @@ app.use(cookieSession({
   secret: "SaT/élite"
 }));
 
-app.use('/',function(req, res, next){
-    res.redirect('/accueil');
-});
-
 app.use('/analyse', function(req, res, next) {
     if(req.query.tag != undefined) {
         res.redirect("/analyse/"+req.query.tag);
@@ -37,7 +33,7 @@ app.use('/analyse/:tag', function(req, res, next) {
 });
 
 app.use('/:page', function(req, res, next){
-    fs.access('views' + req.params.page +'.ejs', function (err) {
+    fs.access(__dirname + '/views' + req.params.page +'.ejs', function (err) {
     	if (err) {
     	    res.status(404);
     		console.error('404 : /' + req.params.page);
