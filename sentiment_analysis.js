@@ -7,7 +7,6 @@ var client = tumblr.createClient({
 		  token_secret: 'GjchewKEn6fcHtQAC8lbvcTmKUwSDHq53JlcuzKNdaJ3xQpMGu'
 	});
 
-
 	/*
 var dataLoaded = function(res){
 		console.log('Done !');
@@ -20,17 +19,63 @@ var loadData = function(err,data,res,callback){
 		callback(res);		
 }
 */
-
-
-exports.getResults = function(the_tag,callback){
-	console.log("\n======== NEW ANALYSIS ===\nTag detected : "+the_tag);
+exports.getResultsIntermediaires = function(the_tag,timestamp, callback){
+	
 	var res = [];
-	console.log('enter getResults');
-	client.tagged(the_tag, { limit: 50 },function (err, data) {
+
+	client.tagged(the_tag, { limit: 20, before : timestamp },function (err, data) {
 		res = res.concat(data);
 		callback(res);
 	});
+	
+	
 };
+
+exports.getResults=function(the_tag, timestamp,iter, list) {
+	console.log('Tag: '+the_tag);
+    var deferred = Promise.defer();
+	var iteration=0;
+    
+    exports.getResultsIntermediaires(the_tag,timestamp,function(response) {
+        
+        var responseBody = "";  // will hold the response body as it comes
+        
+        // join the data chuncks as they come
+       
+        responseBody.concat(response);
+			//console.log(response);
+			
+            list.push(response);
+            
+            if(iter<5) {iteration=iter+1;
+                exports.getResults(the_tag,timestamp, iteration, response)
+                .then(function() {
+                    deferred.resolve();
+                });
+            }
+            else {
+                deferred.resolve();
+				
+            }
+        }
+    
+	
+	
+	);
+    return deferred.promise;
+}
+
+var list = [];
+exports.getResults(the_tag,0,0,list)
+.then(function() {
+    // log the details to the user 
+    console.log('fetched all posts for Sentiment Analysis');
+    console.log('all of the following posts have been loaded');
+    console.log(list);
+});
+
+
+
 
 exports.basicAlgo = function(res,callback){
 	console.log('enter getFeeling');
