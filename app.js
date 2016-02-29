@@ -45,6 +45,8 @@ app.get('/',function(req,res){
 	var params = querystring.parse(url.parse(req.url).query);
 	
 	if( 'tag' in params){
+		var list = [];
+
 		var results = analysis.getResults(params['tag'],function(results){
 				var feeling = analysis.basicAlgo(results,function(f){
 					console.log('enter rendering');

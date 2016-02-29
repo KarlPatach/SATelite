@@ -66,7 +66,7 @@ exports.getResults=function(the_tag, timestamp,iter, list) {
 }
 
 var list = [];
-exports.getResults(the_tag,0,0,list)
+exports.getResults('Trump',0,0,list)
 .then(function() {
     // log the details to the user 
     console.log('fetched all posts for Sentiment Analysis');
