@@ -43,18 +43,27 @@ exports.getResults=function(the_tag, timestamp,iter, list) {
         // join the data chuncks as they come
        
         //responseBody.concat(response);
-			console.log(response);
-			for(var post in response){
-			list.push(post);
-	}
+			//console.log(response);
+			//for(var post in response){
+			//list.push(post);
+	//}
+			list.push(response);
             
-            
-            if(iter<5) {iteration=iter+1;
-				time=responseBody[responseBody.length-1].timestamp;
-                exports.getResults(the_tag,time, iteration, list)
+            if(iter<20) {iteration=iter+1;
+				time=responseBody[responseBody.length-1];
+				if ( typeof time !== 'undefined')
+{		time=time.timestamp;
+  //do stuff if query is defined and not null
+  exports.getResults(the_tag,time, iteration, list)
                 .then(function() {
                     deferred.resolve();
                 });
+}
+else {
+                deferred.resolve();
+				
+            }
+                
             }
             else {
                 deferred.resolve();
@@ -76,9 +85,16 @@ exports.getResults('Trump',0,0,list)
     console.log('fetched all posts for Sentiment Analysis');
     console.log('all of the following posts have been loaded');
     console.log(list);
+	var feeling = analysis.basicAlgo(list,function(f){
+				console.log('enter rendering');
+				res.render('result',
+					{title : 'Sentiment Analysis on Tumblr',
+					message : 'Enter a tag you want to analyze :',
+					feeling : f}
+				);
+			});
 });
 */
-
 
 
 exports.basicAlgo = function(res,callback){
@@ -86,8 +102,16 @@ exports.basicAlgo = function(res,callback){
 	var feeling,
 		global_score = 0;
 	for(var post in res){
-			global_score += sentiment(res[post].summary.toString()).score;
+			for(var p in post){
+				actualpost=res[post][p];
+				if(typeof actualpost !== 'undefined' && actualpost !== null)
+				global_score += sentiment(actualpost.summary.toString()).score;
+			}
+			
 	}
+
+	
+
 	console.log('Feeling : '+global_score);
 	callback(global_score);
 }
