@@ -46,9 +46,13 @@ app.get('/',function(req,res){
 	
 	if( 'tag' in params){
 		var list = [];
-
-		var results = analysis.getResults(params['tag'],function(results){
-				var feeling = analysis.basicAlgo(results,function(f){
+		var results = analysis.getResults(params['tag'],0,0,list
+		).then(function() {
+    // log the details to the user 
+    console.log('fetched all posts for Sentiment Analysis');
+    console.log('all of the following posts have been loaded');
+    console.log(list);
+	var feeling = analysis.basicAlgo(results,function(f){
 					console.log('enter rendering');
 					res.render('result',
 						{title : 'Sentiment Analysis on Tumblr',
@@ -56,8 +60,7 @@ app.get('/',function(req,res){
 						feeling : f}
 						);
 					})
-				}
-		);
+});
 	}
 })
 .post('/*', function(req, res) {

@@ -38,17 +38,20 @@ exports.getResults=function(the_tag, timestamp,iter, list) {
     
     exports.getResultsIntermediaires(the_tag,timestamp,function(response) {
         
-        var responseBody = "";  // will hold the response body as it comes
+        var responseBody = response;  // will hold the response body as it comes
         
         // join the data chuncks as they come
        
-        responseBody.concat(response);
-			//console.log(response);
-			
-            list.push(response);
+        //responseBody.concat(response);
+			console.log(response);
+			for(var post in response){
+			list.push(post);
+	}
+            
             
             if(iter<5) {iteration=iter+1;
-                exports.getResults(the_tag,timestamp, iteration, response)
+				time=responseBody[responseBody.length-1].timestamp;
+                exports.getResults(the_tag,time, iteration, list)
                 .then(function() {
                     deferred.resolve();
                 });
@@ -65,6 +68,7 @@ exports.getResults=function(the_tag, timestamp,iter, list) {
     return deferred.promise;
 }
 
+/*
 var list = [];
 exports.getResults('Trump',0,0,list)
 .then(function() {
@@ -73,7 +77,7 @@ exports.getResults('Trump',0,0,list)
     console.log('all of the following posts have been loaded');
     console.log(list);
 });
-
+*/
 
 
 
