@@ -7,18 +7,7 @@ var client = tumblr.createClient({
 		  token_secret: 'GjchewKEn6fcHtQAC8lbvcTmKUwSDHq53JlcuzKNdaJ3xQpMGu'
 	});
 
-	/*
-var dataLoaded = function(res){
-		console.log('Done !');
-		return res;
-}
-	
-var loadData = function(err,data,res,callback){
-		console.log('Data loaded');
-		res = res.concat(data);
-		callback(res);		
-}
-*/
+//Requête simple de 20 posts
 exports.getResultsIntermediaires = function(the_tag,timestamp, callback){
 	
 	var res = [];
@@ -31,72 +20,42 @@ exports.getResultsIntermediaires = function(the_tag,timestamp, callback){
 	
 };
 
-exports.getResults=function(the_tag, timestamp,iter, list) {
-	console.log('Tag: '+the_tag);
+//Accumulation de requêtes
+exports.getResults = function(the_tag, timestamp, iter, list) {
+    console.log('Tag: ' + the_tag);
     var deferred = Promise.defer();
-	var iteration=0;
-    
-    exports.getResultsIntermediaires(the_tag,timestamp,function(response) {
-        
-        var responseBody = response;  // will hold the response body as it comes
-        
-        // join the data chuncks as they come
-       
-        //responseBody.concat(response);
-			//console.log(response);
-			//for(var post in response){
-			//list.push(post);
-	//}
-			list.push(response);
-            
-            if(iter<20) {iteration=iter+1;
-				time=responseBody[responseBody.length-1];
-				if ( typeof time !== 'undefined')
-{		time=time.timestamp;
-  //do stuff if query is defined and not null
-  exports.getResults(the_tag,time, iteration, list)
-                .then(function() {
+    var iteration = 0;
+
+    exports.getResultsIntermediaires(the_tag, timestamp, function(response) {
+
+            var responseBody = response; // Objet réponse tumblr
+
+            list.push(response); // On accumule les posts
+
+            if (iter < 20) {
+                iteration = iter + 1;
+                time = responseBody[responseBody.length - 1];
+                if (typeof time !== 'undefined') {
+                    time = time.timestamp;
+                    //do stuff if query is defined and not null
+                    exports.getResults(the_tag, time, iteration, list)
+                        .then(function() {
+                            deferred.resolve();
+                        });
+                } else {
                     deferred.resolve();
-                });
-}
-else {
+                }
+
+            }else {
                 deferred.resolve();
-				
-            }
-                
-            }
-            else {
-                deferred.resolve();
-				
+
             }
         }
-    
-	
-	
-	);
+    );
     return deferred.promise;
 }
 
-/*
-var list = [];
-exports.getResults('Trump',0,0,list)
-.then(function() {
-    // log the details to the user 
-    console.log('fetched all posts for Sentiment Analysis');
-    console.log('all of the following posts have been loaded');
-    console.log(list);
-	var feeling = analysis.basicAlgo(list,function(f){
-				console.log('enter rendering');
-				res.render('result',
-					{title : 'Sentiment Analysis on Tumblr',
-					message : 'Enter a tag you want to analyze :',
-					feeling : f}
-				);
-			});
-});
-*/
-
-
+//Algorithme basique avec dictionnaire AFINN
 exports.basicAlgo = function(res,callback){
 	console.log('enter getFeeling');
 	var feeling,
@@ -110,19 +69,7 @@ exports.basicAlgo = function(res,callback){
 			
 	}
 
-	
-
 	console.log('Feeling : '+global_score);
 	callback(global_score);
 }
 
-
-
-
-/*	client.tagged(the_tag, { limit: 100 },function (err, data) {
-		console.log('Data loaded');
-		res = res.concat(data);
-		dataLoaded(data);
-	});
-	
-	*/
