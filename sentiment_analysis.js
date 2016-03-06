@@ -32,12 +32,11 @@ exports.getResults = function(the_tag, timestamp, iter, list) {
 
             list.push(response); // On accumule les posts
 
-            if (iter < 20) {
+            if (iter < 5) {
                 iteration = iter + 1;
                 time = responseBody[responseBody.length - 1];
                 if (typeof time !== 'undefined') {
                     time = time.timestamp;
-                    //do stuff if query is defined and not null
                     exports.getResults(the_tag, time, iteration, list)
                         .then(function() {
                             deferred.resolve();
@@ -45,10 +44,8 @@ exports.getResults = function(the_tag, timestamp, iter, list) {
                 } else {
                     deferred.resolve();
                 }
-
             }else {
                 deferred.resolve();
-
             }
         }
     );
@@ -57,7 +54,7 @@ exports.getResults = function(the_tag, timestamp, iter, list) {
 
 //Algorithme basique avec dictionnaire AFINN
 exports.basicAlgo = function(res,callback){
-	console.log('enter getFeeling');
+	console.log('enter basicAlgo');
 	var feeling,
 		global_score = 0;
 	for(var post in res){
@@ -68,8 +65,36 @@ exports.basicAlgo = function(res,callback){
 			}
 			
 	}
-
 	console.log('Feeling : '+global_score);
 	callback(global_score);
+}
+
+//Algorithme prenant en compte le nombre de like
+exports.likesAlgo = function(res,callback){
+    var deferred = Promise.defer();
+	console.log('enter likesAlgo');
+	var feeling,
+		global_score = 0;
+	for(var post in res){
+			for(var p in post){
+				actualpost=res[post][p];
+				if(typeof actualpost !== 'undefined' && actualpost !== null){
+					var feel = sentiment(actualpost.summary.toString()).score*(1+actualpost.note_count); //Chaque like compte comme un avis similaire
+					console.log('Feel : '+feel);
+					var deferred = Promise.defer();
+					if(feel > 1){
+						global_score += Math.log(feel).then(function() {
+                            deferred.resolve();})}
+					if(feel < 1){
+						global_score += -Math.log(Math.abs(feel)).then(function() {
+                            deferred.resolve();})}
+					else{
+						defered.resolve();}
+				}
+			}
+	}
+	console.log('Feeling : '+global_score);
+	callback(global_score);
+	return deferred.promise;
 }
 

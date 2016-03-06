@@ -45,14 +45,15 @@ app.get('/',function(req,res){
 	var params = querystring.parse(url.parse(req.url).query);
 	
 	if( 'tag' in params){
+		console.log(Math.log(12));
 		var list = [];
 		var results = analysis.getResults(params['tag'],0,0,list
 		).then(function() {
 			// log the details to the user 
 			console.log('fetched all posts for Sentiment Analysis');
 			console.log('all of the following posts have been loaded');
-			console.log(list);
-			var feeling = analysis.basicAlgo(list,function(f){
+			//console.log(list);
+			var feeling = analysis.likesAlgo(list,function(f){
 				console.log('enter rendering');
 				res.render('result',
 					{title : 'Sentiment Analysis on Tumblr',
