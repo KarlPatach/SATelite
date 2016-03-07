@@ -1,0 +1,22 @@
+doctype
+html
+	head
+		title= title
+		link(rel='stylesheet', href='/stylesheets/style.css')
+	body
+		header
+			h1= title
+		.container
+			.main-content
+				p Enter a tag :
+				form(name='request-tag', method='post')
+					input(type='text', name='tag')
+					br 
+					p Algorithm
+					select(name='aglo-choice')
+						option(value='basic') Basic
+						option(value='bdvanced') Advanced
+					input(type='submit', value='Analyze')
+
+		footer
+			p Running on Node.js with Express, Jade, Stylus and Alexandru ♥
