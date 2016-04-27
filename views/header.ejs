@@ -1,0 +1,22 @@
+<header>
+    <div class="titre">
+        <h1>
+            <img src="/favicon.png" alt="logo SATélite" id="logo">
+            SATelite
+        </h1>
+    <p>Sentiment Analysis on Tumblr</p>
+    </div>
+    <form action="/analyse" method="get">
+        <input type="search" id="tag" name="tag" placeholder="Tag" value="<% if(locals.tag) { %><%= tag %><% } %>"/>
+        <div class="options">
+            <input type="text" placeholder="Nombre de posts analysés (Défaut : 400)" name="nbPosts" value="<% if(locals.nbPosts) { %><%= nbPosts %><% } %>"/>
+            <select id="algo">
+               <option>Algorithme 1</option>
+               <option>Algorithme 2</option>
+               <option>Autre</option>
+               
+            </select> 
+            <input type="submit" value="Submit"/>
+        </div>
+    </form>
+</header>
