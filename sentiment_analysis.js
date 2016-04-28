@@ -6,6 +6,8 @@ var client = tumblr.createClient({
     token: '4LWlYlVjXW1XhMkKC05oFaF0UY9ZhlBv770CEZGIQHicsJ2Xk7',
     token_secret: 'GjchewKEn6fcHtQAC8lbvcTmKUwSDHq53JlcuzKNdaJ3xQpMGu'
 });
+var tokenize  = require('sentiment/lib/tokenize.js');
+var fs = require('fs');
 
 //Requête simple de 20 posts
 exports.getResultsIntermediaires = function(the_tag, timestamp, callback) {
@@ -22,6 +24,7 @@ exports.getResultsIntermediaires = function(the_tag, timestamp, callback) {
 
 
 };
+
 
 //Accumulation de requêtes
 exports.getResults = function(the_tag, timestamp, iter, list) {
@@ -57,144 +60,166 @@ exports.getResults = function(the_tag, timestamp, iter, list) {
     return deferred.promise;
 }
 
-exports.getDictionnaries = function(callback) {
 
-
+//Vérifies le bon format de la fonction utilisateur
+exports.checkString = function(string,callback){
+	
+	var isValid = true;
+	
+	if((string.match(/\(/g)||[]).length != (string.match(/\)/g)||[]).length) //Toutes les parenthèses doivent être fermées
+		isValid = false;
+	if((string.match(/\{/g)||[]).length != (string.match(/\}/g)||[]).length) //Toutes les curlybrackets doivent être fermés
+		isValid = false;
+	
+	return isValid;
 
 }
+
+
+//Algorithme écrit par l'utilisateur sous forme de string
+exports.customAlgo = function(res, dico, stringFunction, callback) {
+
+	var resValid = checkString(stringFunction);
+
+	var userFonct = new Function('res','dico',stringFunction);
+	
+	if(resValid){
+		try{
+			callback(userFonct(res,dico));
+		}
+		catch(e){
+			//Erreur de syntaxes/variables mal nommées etc... non prévues par les tests
+		}
+	}
+	else
+		callback(null);
+	
+}
+
 
 //Algorithme basique avec dictionnaire 
 exports.basicAlgo = function(res, mon_dico, callback) {
 
-    var dico = require("sentiment/build/" + mon_dico);
+    console.log('enter basicAlgo');
 
-
-    var positivityByType = [
-        ['Type', 'Positiv', 'Negativ'],
+	//Initialisation variables
+    var dico = require("sentiment/build/" + mon_dico),
+		positivityByType = [
+        ['Type', 'Positive', 'Negative'],
         ['Text', 0, 0],
         ['Photo', 0, 0],
         ['Quote', 0, 0],
         ['Link', 0, 0]
-    ];
-
-    console.log('enter basicAlgo');
-
-    var feeling,
-        global_score = 0;
-
-
+			],
+		feeling,
+        global_score = 0,
+		negationOn = false;
+		intensifyOn = false;
+		
+        if(intensifyOn)
+			var intensifiers = fs.readFileSync('./intensifiers.txt','utf8').split(); //TO DO supprimer retours charriot
+		else if(negationOn)
+			var negationWords = fs.readFileSync('./intensifiers.txt','utf8').split(); //TODO supprimer retours charriot
+		
+	
+	//On boucle sur les posts
     for (var i = 0; i < res.length; i++) {
-        var tmpscore = sentiment(res[i][0]).score;
-
-        //phrase = res[i][0] / inject ballec / callback is good
+	
         if (typeof res[i][0] === 'undefined') res[i][0] = '';
-        //if (typeof callback === 'undefined') callback = null;
-        
-        // /!\ a enlever
-        var tokens = [res[i][0]];
-        // Storage objects
-        /*if(négation ou multiplicateur coché)
-            var tokens      = tokenize.tokenize_phrases(res[i][0]);
-        else
-            var tokens = [res[i][0]];    */
+		
+        //On tokenize soit en phrases, soit en mots suivant les options
+		if(negationOn || intensifyOn)
+		    var tokens = tokenize.tokenize_phrases(res[i][0]);
+		else
+            var tokens = tokenize.tokenize_words(res[i][0]); 
 
-        var score = 0,
-            words = [],
-            positive = [],
-            negative = [];
-            
-       
+		
+		for(var j = 0; j< tokens.length; j++){
+			
+			var item = 0;
+			
+			if(negationOn || intensifyOn){
+				
+				var negation = 1;
+				var amplification  = 1;
+				
+				words = tokenize.tokenize_words(token);
+				for(var k = 0; k<words.length; k++){
+				
+					var obj = words[k];
+				
+					if (negationWords.indexOf(obj)!==-1)
+						negation=-negation
+					
+					if (intensifiers.indexOf(obj)!==-1) //TODO intensifiers sous forme de hashmap
+						amplification = 2;
+						
+					if (!dico.hasOwnProperty(obj)) continue;
+					
+					if(amplification !== 1)
+						score += item*negation;
+					else{
+						global_score += item*negation*amplification;
+						amplification = 1;
+					}
+				}
+			}
+			else{
 
-        // Iterate over tokens
-        var len = tokens.length;
-        while (len--) {
-            /*
-                var mots = tokenize.tokenize_words(tokens);
-                var len2 = mots.length;
-                while(len2--){
-                      var obj = tokens[len];
-                        var item = dico[obj];
-                        if (!dico.hasOwnProperty(obj)) continue;
-                
-                        words.push(obj);
-                        if (item > 0) positive.push(obj);
-                        if (item < 0) negative.push(obj);
-                
-                        score += item;
-                }
-                
-                
-            */
+				var obj = tokens[j];
+				var item = dico[obj];
+				if (!dico.hasOwnProperty(obj)) continue;
 
-            var obj = tokens[len];
-            var item = dico[obj];
-            if (!dico.hasOwnProperty(obj)) continue;
+				global_score += item;
 
-            words.push(obj);
-            if (item > 0) positive.push(obj);
-            if (item < 0) negative.push(obj);
-
-            score += item;
-        }
-
-        // Handle optional async interface
-        var result = {
-            score: score,
-            comparative: score / tokens.length,
-            tokens: tokens,
-            words: words,
-            positive: positive,
-            negative: negative
-        };
-
-        //if (callback === null) return result;
-        /*process.nextTick(function() {
-            callback(null, result);
-        });*/
-        switch (res[i][1]) {
-            case "text":
-                if (tmpscore > 0) {
-                    positivityByType[1][1] += tmpscore;
-                }
-                else {
-                    positivityByType[1][2] += -tmpscore;
-                };
-                break;
-            case "photo":
-                if (tmpscore > 0) {
-                    positivityByType[2][1] += tmpscore;
-                }
-                else {
-                    positivityByType[2][2] += -tmpscore;
-                };
-                break;
-            case "quote":
-                if (tmpscore > 0) {
-                    positivityByType[3][1] += tmpscore;
-                }
-                else {
-                    positivityByType[3][2] += -tmpscore;
-                };
-                break;
-            case "link":
-                if (tmpscore > 0) {
-                    positivityByType[4][1] += tmpscore;
-                }
-                else {
-                    positivityByType[4][2] += -tmpscore;
-                };
-                break;
-            default:
-                break;
-        }
-        global_score += tmpscore;
+			}
+			
+			//Positivity by Type
+			switch (res[i][1]) {
+				case "text":
+					if (item > 0) {
+						positivityByType[1][1] += item;
+					}
+					else {
+						positivityByType[1][2] += -item;
+					};
+					break;
+				case "photo":
+					if (item > 0) {
+						positivityByType[2][1] += item;
+					}
+					else {
+						positivityByType[2][2] += -item;
+					};
+					break;
+				case "quote":
+					if (item > 0) {
+						positivityByType[3][1] += item;
+					}
+					else {
+						positivityByType[3][2] += -item;
+					};
+					break;
+				case "link":
+					if (item > 0) {
+						positivityByType[4][1] += item;
+					}
+					else {
+						positivityByType[4][2] += -item;
+					};
+					break;
+				default:
+					break;
+			}
+		}
     }
-    
     var resultat = [global_score, positivityByType];
     console.log('Feeling : ' + resultat[0]);
     callback(resultat);
 }
 
+
+//Formalisation des données en traitant les posts récupérés
 exports.traitement = function(list, callback) {
     console.log('entree traitement');
 
@@ -217,7 +242,9 @@ exports.traitement = function(list, callback) {
         "tag": null,
         "nbPosts": 0
     };
-
+	
+	var words  = {};
+	
     var count = 0;
 
     console.log("taille " + list[0].length);
