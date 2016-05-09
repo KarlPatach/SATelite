@@ -1,24 +1,40 @@
 <!DOCTYPE html>
 <html>
     <head>
-	    <title>SATÉlite | Sentiment Analysis on Tumblr</title>
+	    <title>SATelite | Sentiment Analysis on Tumblr</title>
 		<meta charset="utf-8"/>
 		<meta name="description" content="">
 		<meta name="author" content="Maxime PARIZOT, Franck BARBEDOR, Simon KEMPF, Simon TREBERN">
 		<meta name="keywords" content="">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-		<link rel="stylesheet" type="text/css" href="tpl/design.css">
-		<link rel="icon" type="image/png" href="img/favicon.png" />
+		<link href='https://fonts.googleapis.com/css?family=Lato:300,300italic' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" type="text/css" href="/design.css">
+		<link rel="icon" type="image/png" href="/favicon.png" />
     </head>
-    <body>
+    <body id="home">
         <header>
-            <h1></h1>
-            <form action="index.html" method="get">
-                <input type="search" name="tag" placeholder="Tag"/>
-                <input type="submit" value="Submit"/>
+            <div class="titre">
+            <p><img src="/favicon.png" alt="logo SATélite" id="logo"> Sentiment Analysis on Tumblr</p>
+            </div>
+            <div class="accroche">
+                <h1>SATelite</h1> 
+                <p>Analyser les tendances sur les réseaux sociaux est désormais aussi facile que d'utiliser
+                    un moteur de recherche</p>
+                <p class="suggest">Entrez simplement un terme et voyez l'opinion de la communauté Tumblr sur ce sujet</p>
+            </div>
+            <form action="/analyse" method="get">
+                <input type="search" id="tag" name="tag" placeholder="Tag" value="<% if(locals.tag) { %><%= tag %><% } %>"/>
+                <div class="options" style="visibility: hidden;">
+                    <input type="text" placeholder="Nombre de posts analysés (Défaut : 400)" name="nbPosts" value="400"/>
+                    <select id="algo">
+                       <option>Basic Algo</option>
+                       <option>Custom Algo</option>
+                       <option>Autre</option>
+                       
+                    </select> 
+                    <input type="submit" value="Submit"/>
+                </div>
             </form>
         </header>
-        <section class="main">
-        </section>
     </body>
 </html>

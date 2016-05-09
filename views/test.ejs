@@ -10,7 +10,6 @@
 		<link rel="stylesheet" type="text/css" href="/design.css">
 		<link rel="stylesheet" type="text/css" href="/jqcloud.css">
 		<link rel="stylesheet" type="text/css" href="/flickity.css">
-		<link href='https://fonts.googleapis.com/css?family=Lato:300,300italic' rel='stylesheet' type='text/css'>
 		<link rel="icon" type="image/png" href="/favicon.png" />
 	
 	<!-- camembert -->
@@ -54,28 +53,28 @@
 	
 		
     </head>
-    <body id="analyse">
+    <body>
         <% include header.ejs %>
         <section class="main">  <!--utiliser le javascript sans le code-->
             <% if(locals.tag) { %>
             
-            <h1><%= tag %></h1>   <!--permet d'afficher une variable-->
+            <h1>Tag : <%= tag %></h1>   <!--permet d'afficher une variable-->
             <p id="score" class="<% if(score > 0) {%>positif<% } else if (score < 0) {%>negatif<% } %>"><%= score %></p>
         
-            <div id="tagcloud"></div>
+            <div id="tagcloud" style="width: 550px; height: 350px;"></div>
             
             <div>
                 <h2>Posts influents</h2>
                 <ul>
                     <% for (post of  influents)  { %>
-                    <li><a href="<%= post.post_url %>"><%= post.blog_name %><% if(post.title != undefined) {%> : <%=post.title%><% } %></a></li>  
+                    <li><a href="<%= post.url %>"><%= post.text %></a></li>  
                     <% } %>
                 </ul>
             </div>
             
-            <div class="main-carousel">
+            <div class="main-carousel" style="height: 400px; width: 500px;">
                 <% for(picture of pictures) { %>
-                  <div class="carousel-cell"><img src="<%= picture.src %>" alt="<%= picture.title %>"/></div>
+                  <div class="carousel-cell"><img src="<%= picture.src %>" alt="<%= picture.title %>" style="height: 400px;"/></div>
                 <% } %>
             </div>
             
@@ -92,12 +91,13 @@
                 <p>Saisissez un tag pour l'analyser</p>
             <% } %>
         
+        </section>
+        
         <!-- Camembert -->
-        <div id="piechart"></div>
+        <div id="piechart" style="width: 900px; height: 500px;"></div>
         
         <!-- Diagramme colonnes -->
-        <div id="columnchart_material"></div>
-        </section>
+        <div id="columnchart_material" style="width: 900px; height: 500px;"></div>
  
         
     </body>
