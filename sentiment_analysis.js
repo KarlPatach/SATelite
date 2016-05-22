@@ -1,4 +1,4 @@
-var sentiment = require('sentiment');
+var sentiment = require('./node_modules/sentiment');
 var tumblr = require('tumblr.js');
 var client = tumblr.createClient({
     consumer_secret: 'mWKUO9CpIDaDSpVbHoczOTYU21A9U6lsCPINihdu7XCXpwsXP3',
