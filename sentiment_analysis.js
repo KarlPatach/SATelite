@@ -16,7 +16,8 @@ exports.getResultsIntermediaires = function(the_tag, timestamp, callback) {
 
     client.tagged(the_tag, {
         limit: 20,
-        before: timestamp
+        before: timestamp,
+        filter: "text"
     }, function(err, data) {
         res = res.concat(data);
         callback(res);
@@ -26,26 +27,27 @@ exports.getResultsIntermediaires = function(the_tag, timestamp, callback) {
 };
 
 
-//Accumulation de requêtes
-exports.getResults = function(the_tag, timestamp, iter, list) {
+//Accumulation de requêtes, fonction récursive
+exports.getResults = function(the_tag, timestamp, iter, iterTot, list, socket) {
     var deferred = Promise.defer();
     var iteration = 0;
-
+    //fonction qui récupère les posts
     exports.getResultsIntermediaires(the_tag, timestamp, function(response) {
 
         var responseBody = response; // Objet réponse tumblr
         //20 posts dans response
         list.push(response); // On accumule les posts
 
-        if (iter > 1) {
+        if (iter < iterTot) {
             console.log('Tag: ' + the_tag + "      " + iter);
-
-            iteration = iter - 1;
+            // socket.emit('progress',{getResults : iter*20, getResultsTot : iterTot*20} );
+            iteration = iter + 1;
+            //on change le timestamp pour les requêtes futures
             var time = responseBody[responseBody.length - 1];
             if (typeof time !== 'undefined') {
                 time = time.timestamp;
-                //do stuff if query is defined and not null
-                exports.getResults(the_tag, time, iteration, list)
+                //Si la requête est définie et non nulle (il reste des posts antérieurs)
+                exports.getResults(the_tag, time, iteration, iterTot, list, socket)
                     .then(function() {
                         deferred.resolve();
                     });
@@ -62,67 +64,107 @@ exports.getResults = function(the_tag, timestamp, iter, list) {
 }
 
 
-//Vérifies le bon format de la fonction utilisateur
-var checkString = function(string, callback) {
 
-    var isValid = true;
-
-
-    return isValid;
-
-}
 
 
 //Algorithme écrit par l'utilisateur sous forme de string
-exports.customAlgo = function(res, dico, stringFunction, callback) {
+exports.customAlgo = function(res, dico, stringFunction, socket, callback) {
     console.log("enter custom algo");
-    var resValid = checkString(stringFunction);
-    //var resValid = true;
+    //on appelle la fonction avec les posts, le dictionnaire choisi, le code de l'utilisateur
     var userFonct = new Function('res', 'dico', stringFunction);
-
     try {
+        //on retourne le résultat si le code est valide
         callback(userFonct(res, dico));
-        if (!resValid)
-            throw new Error("Invalid return statement.");
     }
     catch (e) {
         var message = "Error : " + e.name + "\nError message : " + e.message;
         console.log(message); //Erreur de syntaxes/variables mal nommées etc... non prévues par les tests
-        //Changer le callback?
+        //Changement de callback possible
         callback(["error", message])
     }
 }
 
-
-exports.getKeywords = function(res, callback) {
+//TF IDF
+exports.getTFIDF = function(res) {
     console.log("Getting Keywords");
-    var keywords = {};
+    var idftab = {};
+    var tftab = {};
+
+    //La première fois qu'on trouve un mot on le range, sinon on incrémente le nb de fois qu'on le trouve
     for (var i = 0; i < res.length; i++) {
+
+        if (typeof res[i].texte === 'undefined') res[i].texte = '';
         var tokens = tokenize.tokenize_words(res[i].texte);
-        for (var j = 0; j < tokens.length; j++) {
-            if (!keywords.hasOwnProperty(tokens[j])) {
-                keywords[tokens[j]] = 1;
+        for (var k = 0; k < tokens.length; k++) {
+            if (!idftab.hasOwnProperty(tokens[k])) {
+                idftab[tokens[k]] = 1;
             }
             else
-                keywords[tokens[j]]++;
-        }
-    }
-    var topWords = []
-    console.log("sorting ....");
-    Object.keys(keywords).forEach(function(element, key, _array) {
-        for (var i = 0; i < 10; i++) {
-            if (sentiment(element).score !== 0 && (keywords[element] > keywords[topWords[i]] || topWords[i] == null)) {
-                topWords[i] = element;
-                break;
+                idftab[tokens[k]]++;
+
+            if (!tftab.hasOwnProperty(tokens[k])) {
+                var tmp = {}
+                tftab[tokens[k]]=tmp
+                tftab[tokens[k]][i] = 1;
+         
+            }
+            else {
+                if (!tftab[tokens[k]].hasOwnProperty(i)) {
+                    tftab[tokens[k]][i] = 1;
+                    
+                }
+                else {
+                    tftab[tokens[k]][i]++;
+                    
+                }
             }
         }
-    });
-    callback(topWords);
+        for (var k = 0; k < tokens.length; k++) {
+            tftab[tokens[k]][i] = tftab[tokens[k]][i] / tokens.length;
+        }
+
+
+    }
+    for (var l in idftab) { //ca il aime pas
+        idftab[l] = Math.log((res.length * 20) / idftab[l])
+    }
+
+    var tf_idf = {
+        tf: tftab,
+        idf: idftab
+    }
+    return tf_idf;
 }
 
+exports.test = function() {
+
+    var texte = fs.readFileSync("./fichierstests/265,1Mo.txt", 'utf8');
+    //console.log(texte);
+    var array = eval(texte);
+    console.time("test");
+    var lol = traitement(array, null, function(r) {
+                basicAlgo(r["posts"],"AFINN.json", null, true, false, false, false, false, false, function(f) {
+                    console.log(f);
+                });
+            });
+    console.timeEnd("test");
+    return;
+}
 
 //Algorithme basique avec dictionnaire 
-exports.basicAlgo = function(res, mon_dico, callback) {
+exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, ponderationParPhrase, ponderationParNombre, moyenne, tfidf, callback) {
+    if (negation === undefined)
+        negation = false
+    if (amplification === undefined)
+        amplification = false
+    if (ponderationParNombre === undefined)
+        ponderationParNombre = false
+    if (ponderationParPhrase === undefined)
+        ponderationParPhrase = false
+    if (moyenne === undefined)
+        moyenne = false
+
+    console.log("logneg1 " + negation)
 
     console.log('enter basicAlgo');
 
@@ -136,147 +178,158 @@ exports.basicAlgo = function(res, mon_dico, callback) {
             ['Link', 0, 0]
         ],
         feeling,
-        global_score = 0,
-        negationOn = true,
-        intensifyOn = true;
+        global_score = 0;
 
-    if (intensifyOn) {
-        var intensifiers = fs.readFileSync('./intensifiers.txt', 'utf8').replace(/[\n\r]+/g, ' ').split();
-        console.log("Intensifiers OK");
+    //on ne charge les dictionnaires que si l'option est cochée
+    if (amplification) {
+        var intensifiers = fs.readFileSync('./intensifiers.txt', 'utf8').replace(/[\n\r]+/g, ' ').split(' ');
+        console.log("Intensifiers OK" + intensifiers[0]);
     }
-    if (negationOn) {
-        var negationWords = fs.readFileSync('./negationWords.txt', 'utf8').replace(/[\n\r]+/g, ' ').split();
-        console.log("Negation Words OK");
+    if (negation) {
+        var negationWords = fs.readFileSync('./negationWords.txt', 'utf8').replace(/[\n\r]+/g, ' ').split(' ');
+        console.log("Negation Words OK" + negationWords[0]);
+    }
+    if (tfidf) {
+        var tf_idf = exports.getTFIDF(res)
     }
 
-    
-       
+
+
     //On boucle sur les posts
     var topPosts = [];
     for (var i = 0; i < res.length; i++) {
         var scorePost = 0;
+        //socket.emit('progress', {basicAlgo : i , basicAlgoTot : res.length});
         if (typeof res[i].texte === 'undefined') res[i].texte = '';
 
         //On tokenize soit en phrases, soit en mots suivant les options
-        if (negationOn || intensifyOn)
+        if (negation || amplification)
             var tokens = tokenize.tokenize_phrases(res[i].texte);
         else
             var tokens = tokenize.tokenize_words(res[i].texte);
 
-        //on boucle sur les phrases (1 || n)
-        var negation = 1;
-        var amplification = 1;
-        var ponderationParPhrase =0;
-        var ponderationParNombre = 0;
-        var scorePhrase = 0;
-        var moyenne=1;
-         var nbMots = 0;
-        for (var j = 0; j < tokens.length; j++) {
-           
-            if (negationOn || intensifyOn) {
 
+
+        var scorintensifier = 1;
+        var scorePhrase = 0;
+        var nbMots = 0;
+        var scornegation = 1
+        var scorintensifier = 1
+            //on boucle sur les phrases (1 si tokenisation par mots, n si tokenisation par phrase)
+        for (var j = 0; j < tokens.length; j++) {
+
+            if (negation || amplification) {
+                //on transforme les phrases en mots
                 var words = tokenize.tokenize_words(tokens[j]);
                 for (var k = 0; k < words.length; k++) {
                     var item = 0;
                     nbMots++;
                     var obj = words[k];
 
-                    if (negationWords.indexOf(obj) !== -1)
-                        negation = -negation
+                    //si le mot fait partie des mots de négation
+                    if (negation && negationWords.indexOf(obj) !== -1)
+                        scornegation = -scornegation
+                        //si le mot est un intensifier
+                    if (amplification && intensifiers.indexOf(obj) !== -1)
+                        scorintensifier = 2;
 
-                    if (intensifiers.indexOf(obj) !== -1) //TODO intensifiers sous forme de hashmap
-                        amplification = 2;
-
+                    //si le mot existe dans le dictionnaire
                     if (!dico.hasOwnProperty(obj)) continue;
 
+                    //on attribue le score du dictionnaire
                     var item = dico[obj];
-                    
-                    
-                    if (amplification === 1)
-                        scorePhrase += item * negation;
-                    else {
-                        scorePhrase += item * negation * amplification;
-                        amplification = 1;
-                    }
+                    if (tfidf)
+                        item = item * tf_idf.idf[obj] * tf_idf.tf[obj][i]
+                        //calcul final du mot dans la phrase
+                    scorePhrase += item * scornegation * scorintensifier;
+
+
                 }
             }
             else {
                 nbMots++;
+                //donne le score du mot
                 var obj = tokens[j];
                 var item = dico[obj];
                 if (!dico.hasOwnProperty(obj)) continue;
-
+                if (tfidf)
+                        item = item * tf_idf.idf[obj] * tf_idf.tf[obj][i]
                 scorePhrase += item;
             }
 
-            //Positivity by Type
-            switch (res[i].type) {
-                case "text":
-                    if (item > 0) {
-                        positivityByType[1][1] += item;
-                    }
-                    else {
-                        positivityByType[1][2] += -item;
-                    };
-                    break;
-                case "photo":
-                    if (item > 0) {
-                        positivityByType[2][1] += item;
-                    }
-                    else {
-                        positivityByType[2][2] += -item;
-                    };
-                    break;
-                case "quote":
-                    if (item > 0) {
-                        positivityByType[3][1] += item;
-                    }
-                    else {
-                        positivityByType[3][2] += -item;
-                    };
-                    break;
-                case "link":
-                    if (item > 0) {
-                        positivityByType[4][1] += item;
-                    }
-                    else {
-                        positivityByType[4][2] += -item;
-                    };
-                    break;
-                default:
-                    break;
-            }
+
             //retire un mot de score nul
-            if(item === 0 ){
-                    nbMots--;
-                      console.log("nbMots "+nbMots + obj);
-                }
+            if (scorePhrase === 0) {
+                nbMots--;
+            }
         }
-        
+
         //limite l'importance des scores trop hauts 
-        if(ponderationParPhrase === 1){
-            if(scorePhrase>0){
-              scorePhrase = Math.log(1+ scorePhrase);            
+        if (ponderationParPhrase) {
+            if (scorePhrase > 0) {
+                scorePhrase = Math.log(1 + scorePhrase);
             }
-            else{
-              scorePhrase = -Math.log(1+ Math.abs(scorePhrase)); 
+            else {
+                scorePhrase = -Math.log(1 + Math.abs(scorePhrase));
             }
-        } 
-        
-        //rajoute de l'influence aux posts likes par beaucoup de gens
-        if(ponderationParNombre === 1){
-            scorePhrase= scorePhrase * Math.log(res[i].note_count+2);;
         }
+
+        //rajoute de l'influence aux posts likes par beaucoup de gens
+        if (ponderationParNombre) {
+            scorePhrase = scorePhrase * Math.log(res[i].note_count + 2);;
+        }
+
         //moyenne le score par post par phrase, en essayant de moyenner le poids des mots
-        scorePhrase= scorePhrase/(nbMots*1);
-          
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        //scorePhrase= scorePhrase/(nbMots*1);
+
+        //donne le score global du post
         scorePost += scorePhrase;
         global_score += scorePhrase;
+
+        //"range" le score du post dans son type
+        switch (res[i].type) {
+            case "text":
+                if (scorePost > 0) {
+                    positivityByType[1][1] += scorePost;
+                }
+                else {
+                    positivityByType[1][2] += -scorePost;
+                };
+                break;
+            case "photo":
+                if (scorePost > 0) {
+                    positivityByType[2][1] += scorePost;
+                }
+                else {
+                    positivityByType[2][2] += -scorePost;
+                };
+                break;
+            case "quote":
+                if (scorePost > 0) {
+                    positivityByType[3][1] += scorePost;
+                }
+                else {
+                    positivityByType[3][2] += -scorePost;
+                };
+                break;
+            case "link":
+                if (scorePost > 0) {
+                    positivityByType[4][1] += scorePost;
+                }
+                else {
+                    positivityByType[4][2] += -scorePost;
+                };
+                break;
+            default:
+                break;
+        }
 
         //on récupère les meilleurs posts de type text
         if (res[i].type == "text") {
             for (var current = 0; current < 10; current++) {
-                if (topPosts[current] == null || (Math.abs(scorePost) > topPosts[current]["score"])) {
+                if (topPosts[current] == null || (Math.abs(scorePost) > Math.abs(topPosts[current]["score"]))) {
                     res[i]["score"] = scorePost;
                     topPosts[current] = res[i];
                     break;
@@ -284,25 +337,27 @@ exports.basicAlgo = function(res, mon_dico, callback) {
             }
         }
     }
-    
-    /*if(moyenne === 1){
-        global_score= 100*(global_score/(res.length));
-    }*/
+
+    if (moyenne) {
+        global_score = 100 * (global_score / (res.length));
+    }
+
+    //on construit l'objet de résultat
     var resultat = {
         "global_score": global_score,
         "positivityByType": positivityByType,
         "topPosts": topPosts
     };
-    console.log('topPost1 : ' + resultat.topPosts[0].type);
     console.log('Feeling : ' + resultat.global_score);
     callback(resultat);
 }
 
 
 //Formalisation des données en traitant les posts récupérés
-exports.traitement = function(list, callback) {
+exports.traitement = function(list, socket, callback) {
     console.log('entree traitement');
 
+    //l'objet a remplir au final
     var result = {
         "posts": [],
         "related": {},
@@ -323,26 +378,25 @@ exports.traitement = function(list, callback) {
         "nbPosts": 0
     };
 
+
     var words = {};
 
     var count = 0;
 
-    console.log("taille " + list[0].length);
 
 
 
+    //on boucle sur les chunks
+    for (var i = 0; i < list.length; i++) {
+        //on bloucle sur les posts (20 par chunk)
+        for (var j = 0; j < list[i].length; j++) {
+            //socket.emit('progress', {traitement : (i*20)+j, traitementTot : list.length * 20})
 
-    for (var i = 0; i < list.length; i++) { // requete in list){
-        for (var j = 0; j < list[i].length; j++) { // in requete){
             var actualpost = list[i][j];
             var type = actualpost['type'];
             var note = actualpost["note_count"];
 
-            //console.log("boucle actualpost");
             //get the 5 best posts (improvable)
-
-
-            //Top blog
             if (result["topBlogs"][4] == null || note > result["topBlogs"][4]["note_count"]) {
                 if (result["topBlogs"][3] == null || note > result["topBlogs"][3]["note_count"]) {
                     if (result["topBlogs"][2] == null || note > result["topBlogs"][2]["note_count"]) {
@@ -380,6 +434,7 @@ exports.traitement = function(list, callback) {
 
             var texte = "";
 
+            //On récupère les mots importants par type de post, par champ de post retourné par l'API
             for (var key in actualpost) {
                 switch (key) {
 
@@ -439,6 +494,8 @@ exports.traitement = function(list, callback) {
                         break;
                 }
             }
+
+            //on remplit l'objet a retourner
             var resultTraitement = {
                 "texte": texte,
                 "type": actualpost.type,

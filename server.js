@@ -46,20 +46,77 @@ app.get('/analyse', function(req, res, next) {
     }
 });
 
+app.post('/analyse/:tag', function(req, res, next) {
+    if (req.body.nbPosts == undefined) {
+        req.body.nbPosts = 400; 
+    }
+    var list = [];
+    
+    //Test
+    //analysis.test();
+    
+    switch(req.body.algo){
+        //TODO Sélectionner algo + envoi des parametres
+    }
+    var code = req.query.code;
+    console.time("récup posts"); 
+    var results = analysis.getResults(req.params.tag, 0, 1, req.body.nbPosts / 20, list).then(function() {
+        // log the details to the user
+        console.timeEnd("récup posts"); 
+        console.log('fetched all posts for Sentiment Analysis');
+        analysis.traitement(list, null, function(r) {
+            console.time("timer"); 
+            if(req.body.algo === "basic") {
+                analysis.basicAlgo(r["posts"],"AFINN.json", null, req.body.load, req.body.amplification, req.body.ponderationParPhrase, req.body.ponderationParNombre, req.body.moyenne, req.body.tfidf, function(f) {
+                    console.log("feeling serv" + f.global_score);
+                    r.tag = req.params.tag;
+                    //score remis sur 20 (arbitraire)
+                    //r.score = (f.global_score/req.query.nbPosts)*20;
+                    r.score = f.global_score;
+                    r.positivityByType = f.positivityByType;
+                    r.topPosts=f.topPosts;
+                    delete r.related[r.tag];
+                    console.timeEnd("timer");
+                    console.log('enter rendering');
+                    res.render("analyse.ejs", r);
+                });
+            } else {
+                analysis.customAlgo(r["posts"],"AFINN.json", req.body.script, function(f) {
+                    console.log("feeling serv" + f.global_score);
+                    r.tag = req.params.tag;
+                    //score remis sur 20 (arbitraire)
+                    //r.score = (f.global_score/req.query.nbPosts)*20;
+                    r.score = f.global_score;
+                    r.positivityByType = f.positivityByType;
+                    r.topPosts=f.topPosts;
+                    delete r.related[r.tag];
+                    
+                    console.log('enter rendering');
+                    res.render("analyse.ejs", r);
+                });            
+            }
+
+        });
+
+
+});
+    
+});
+
 app.get('/analyse/:tag', function(req, res, next) {
     if (req.query.nbPosts == undefined) {
         req.query.nbPosts = 400;
     }
     var list = [];
-    
 
-    var results = analysis.getResults(req.params.tag, 0, req.query.nbPosts / 20, list).then(function() {
+    var results = analysis.getResults(req.params.tag, 0, 1, req.query.nbPosts / 20, list).then(function() {
         // log the details to the user 
         console.log('fetched all posts for Sentiment Analysis');
         
-        analysis.traitement(list, function(r) {
+        analysis.traitement(list, null, function(r) {
 
-            analysis.basicAlgo(r["posts"],"AFINN.json", function(f) {
+            analysis.basicAlgo(r["posts"],"AFINN.json", null, undefined, undefined, undefined, undefined, undefined, function(f) {
+                console.log("feeling serv" + f.global_score);
                 r.tag = req.params.tag;
                 //score remis sur 20 (arbitraire)
                 //r.score = (f.global_score/req.query.nbPosts)*20;
@@ -117,13 +174,13 @@ app.get('/:page', function(req, res, next) {
 io.sockets.on('connection', function (socket) {
     socket.on('param', function (data) {
         var list = [];
-        var results = analysis.getResults(data.tag, 0, data.nbPosts / 20, list).then(function() {
+        var results = analysis.getResults(data.tag, 0, 1, data.nbPosts / 20, list, socket).then(function() {
             // log the details to the user 
             console.log('fetched all posts for Sentiment Analysis');
             
-            analysis.traitement(list, function(r) {
+            analysis.traitement(list, socket, function(r) {
     
-                analysis.basicAlgo(r["posts"],"AFINN.json", function(f) {
+                analysis.basicAlgo(r["posts"],"AFINN.json", socket, undefined, undefined, undefined, undefined, undefined, function(f) {
                     r.tag = req.params.tag;
                     console.log('test Serv render');
                     r.score = f.global_score;

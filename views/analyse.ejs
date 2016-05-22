@@ -7,6 +7,7 @@
 		<meta name="author" content="Maxime PARIZOT, Franck BARBEDOR, Simon KEMPF, Simon TREBERN">
 		<meta name="keywords" content="Sentiment Analysis, Tumblr, Insa, Rennes, Analyse de sentiments, Blog">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
 		<link rel="stylesheet" type="text/css" href="/design.css">
 		<link rel="stylesheet" type="text/css" href="/jqcloud.css">
 		<link rel="stylesheet" type="text/css" href="/flickity.css">
@@ -67,8 +68,12 @@
             <div>
                 <h2>Posts influents</h2>
                 <ul>
-                    <% for (post of  influents)  { %>
-                    <li><a href="<%= post.post_url %>"><%= post.blog_name %><% if(post.title != undefined) {%> : <%=post.title%><% } %></a></li>  
+                    <% for (post of  topPosts)  { %>
+                    <% if (post.texte.length > 140) { post.texte = post.texte.substr(0,137) + "..."; } %>
+                    <li><a href="<%= post.url %>"><strong><%= post.name %></strong> : <%= post.texte %> <br>
+                    <span class="score<% if(post.score > 0) {%> positif<% } else if (post.score < 0) {%> negatif<% } %>"><i class="fa fa-line-chart" aria-hidden="true"></i> <%= post.score %></span>
+                    <span class="note"><i class="fa fa-heart text-danger" aria-hidden="true"></i> <%= post.note_count %></span>
+                    </a></li>  
                     <% } %>
                 </ul>
             </div>
@@ -105,6 +110,7 @@
         <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>  <!-- ajout de la librairie jQuery -->
         <script src="/jqcloud-1.0.4.min.js"></script>
         <script src="/flickity.min.js"></script>
+        <script src="/script.js"></script> 
       <script type="text/javascript">
       var word_array = [
         <% for (var word in  related)  { %>

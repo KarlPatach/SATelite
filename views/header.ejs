@@ -4,19 +4,33 @@
             <img src="/favicon.png" alt="logo SATélite" id="logo">
             SATelite
         </h1>
-    <p>Sentiment Analysis on Tumblr</p>
+    <p class="sentat">Sentiment Analysis on Tumblr</p>
     </div>
-    <form action="/analyse" method="get">
-        <input type="search" id="tag" name="tag" placeholder="Tag" value="<% if(locals.tag) { %><%= tag %><% } %>"/>
-        <div class="options">
-            <input type="text" placeholder="Nombre de posts analysés (Défaut : 400)" name="nbPosts" value="<% if(locals.nbPosts) { %><%= nbPosts %><% } %>"/>
-            <select id="algo">
-               <option>Basic Algo</option>
-               <option>Custom Algo</option>
-               <option>Autre</option>
+     <div class="fa-angle-double-down">
+     <form action="/analyse" method="post" id="form">
+                <input type="search" id="tag" name="tag" placeholder="Tag" value="<% if(locals.tag) { %><%= tag %><% } %>"/>
                
-            </select> 
-            <input type="submit" value="Submit"/>
+                <p id="deploy">Options avancées <i  aria-hidden="true"></i></p>
+                
+                <div class="options">
+                    <input type="text" placeholder="Nombre de posts analysés (Défaut : 400)" name="nbPosts" value="400"/>
+                    <select id="algo" name="algo">
+                       <option value="basic">Algorithme simple</option>
+                       <option value="custom">Algorithme personnalisé</option>
+                    </select> 
+                    <div id="basic">
+                        <label><input type="checkbox" name="load" id="load" value="true"/> Négation</label>
+                        <label><input type="checkbox" name="amplification" id="amplification" value="true"/> Amplification</label>
+                        <label><input type="checkbox" name="ponderationParPhrase" id="ponderationParPhrase" value="true"/> Score des phrases équilibrés</label>
+                        <label><input type="checkbox" name="ponderationParNombre" id="ponderationParNombre" value="true"/> Négation</label>
+                        <label><input type="checkbox" name="moyenne" id="moyenne" value="true"/> Scores équilibrés</label>
+                         <label><input type="checkbox" name="tfidf" id="tfidf" value="true"/> TF-IDF</label>
+                    </div>
+                    <div id="custom">
+                        <textarea name="script" id="script" placeholder="Entrez votre script ici"></textarea>
+                    </div>
+                    <input type="submit" value="Submit"/>
+                </div>
+            </form> 
         </div>
-    </form>
 </header>
