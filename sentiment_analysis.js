@@ -6,7 +6,7 @@ var client = tumblr.createClient({
     token: '4LWlYlVjXW1XhMkKC05oFaF0UY9ZhlBv770CEZGIQHicsJ2Xk7',
     token_secret: 'GjchewKEn6fcHtQAC8lbvcTmKUwSDHq53JlcuzKNdaJ3xQpMGu'
 });
-var tokenize = require('sentiment/lib/tokenize.js');
+var tokenize = require('./tokenize.js');
 var fs = require('fs');
 
 //Requête simple de 20 posts
