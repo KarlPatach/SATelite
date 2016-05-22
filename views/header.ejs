@@ -6,12 +6,9 @@
         </h1>
     <p class="sentat">Sentiment Analysis on Tumblr</p>
     </div>
-     <div class="fa-angle-double-down">
-     <form action="/analyse" method="post" id="form">
+            <form action="/analyse" method="post" id="form">
                 <input type="search" id="tag" name="tag" placeholder="Tag" value="<% if(locals.tag) { %><%= tag %><% } %>"/>
-               
-                <p id="deploy">Options avancées <i  aria-hidden="true"></i></p>
-                
+                <p id="deploy">Options avancées <i class="fa fa-angle-double-down" aria-hidden="true"></i></p>
                 <div class="options">
                     <input type="text" placeholder="Nombre de posts analysés (Défaut : 400)" name="nbPosts" value="400"/>
                     <select id="algo" name="algo">
@@ -31,6 +28,5 @@
                     </div>
                     <input type="submit" value="Submit"/>
                 </div>
-            </form> 
-        </div>
+            </form>
 </header>

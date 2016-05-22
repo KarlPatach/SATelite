@@ -23,7 +23,6 @@
                     un moteur de recherche</p>
                 <p class="suggest">Entrez simplement un terme et voyez l'opinion de la communauté Tumblr sur ce sujet</p>
             </div>
-            
             <form action="/analyse" method="post" id="form">
                 <input type="search" id="tag" name="tag" placeholder="Tag" value="<% if(locals.tag) { %><%= tag %><% } %>"/>
                 <p id="deploy">Options avancées <i class="fa fa-angle-double-down" aria-hidden="true"></i></p>

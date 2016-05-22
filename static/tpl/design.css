@@ -269,7 +269,7 @@ border-radius: 5px;
     background: none;
 }
 
-#home form
+header form
 {
     width: 800px;
     margin: auto;
@@ -345,10 +345,6 @@ border-radius: 5px;
         width: 100%;
     }
     
-    #home header form {
-        margin-left:0;
-    }
-    
     #home #tag {
         width:100%;
         margin: auto;
@@ -365,13 +361,10 @@ border-radius: 5px;
     
   
 }
-
-@media (max-width: 800px) {
     
-    #home #tag {
+    #home header form {
         margin-bottom: 150px;
     }
-}
 
 
 
