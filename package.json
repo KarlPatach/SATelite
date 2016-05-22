@@ -1,24 +1,44 @@
 {
-  "name": "sat-elite",
-  "version": "0.1.0",
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "a tool for sentiment analysis on tumblr",
   "main": "server.js",
   "dependencies": {
-    "body-parser": "~1.10.1",
-    "cookie-session": "~1.1.0",
-    "ejs": "~2.1.4",
-    "express": "~4.11.0",
-    "serve-favicon": "~2.3.0"
-  },
-  "author": "PARIZOT Maxime, BARBEDOR Franck, KEMPF Simon, TREBERN Simon",
-  "license": "UNLICENSED",
-  "description": "Site web dédié à l'analyse de sentiments sur Tumblr, réalisé dans le cadre d'un projet de 3ème année à l'INSA de Rennes, avec pour tuteur M. Alexandru COSTAN",
-  "scripts": {
-    "start": "node server.js"
+    "body-parser.1": "^1.15.0",
+    "body-parser": "^1.10.2",
+    "cookie-session": "^1.1.0",
+    "ejs": "^2.1.4",
+    "express": "^4.11.2",
+    "express.1": "^4.13.4",
+    "heroku": "^0.2.0",
+    "jade": "^1.11.0",
+    "master": "^1.0.1",
+    "nib": "^1.1.0",
+    "promise": "^7.1.1",
+    "sentiment.1": "^1.0.6",
+    "serve-favicon": "^2.3.0",
+    "sentiment": "^1.0.6",
+    "serve-favicon.1": "^2.3.0",
+    "socket.io": "^1.4.5",
+    "stylus": "^0.53.0",
+    "tumblr.js": "^0.0.7"
   },
   "devDependencies": {},
-  "keywords": [],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://git.heroku.com/sat-elite.git"
-  }
+  },
+  "keywords": [
+    "tumblr",
+    "sentiment",
+    "analysis",
+    "big",
+    "data"
+  ],
+  "author": "Franck Barbedor, Maxime Parizot, Simon Trebern, Simon Kempf",
+  "license": "ISC"
 }
