@@ -1,5 +1,5 @@
 {
-  "name": "workspace",
+  "name": "sat-elite",
   "version": "1.0.0",
   "description": "a tool for sentiment analysis on tumblr",
   "main": "server.js",
