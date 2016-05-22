@@ -9,7 +9,6 @@
     "cookie-session": "^1.1.0",
     "ejs": "^2.1.4",
     "express": "^4.11.2",
-    "express.1": "^4.13.4",
     "heroku": "^0.2.0",
     "jade": "^1.11.0",
     "master": "^1.0.1",
