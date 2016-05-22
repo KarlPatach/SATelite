@@ -10,7 +10,8 @@
     "sentiment": "file:node_modules/sentiment",
     "serve-favicon": "~2.3.0",
     "socket.io": "file:node_modules/socket.io",
-    "tumblr.js": "file:node_modules/tumblr.js"
+    "tumblr.js": "file:node_modules/tumblr.js",
+    "wordwrap": "file:node_modules/wordwrap"
   },
   "author": "PARIZOT Maxime, BARBEDOR Franck, KEMPF Simon, TREBERN Simon",
   "license": "BSD",
