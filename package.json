@@ -15,7 +15,6 @@
     "promise": "^7.1.1",
     "serve-favicon": "^2.3.0",
     "sentiment": "^1.0.6",
-    "serve-favicon.1": "^2.3.0",
     "socket.io": "^1.4.5",
     "stylus": "^0.53.0",
     "tumblr.js": "^0.0.7"
