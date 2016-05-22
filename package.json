@@ -14,6 +14,15 @@
     "wordwrap": "file:node_modules/wordwrap"
   },
   "author": "PARIZOT Maxime, BARBEDOR Franck, KEMPF Simon, TREBERN Simon",
-  "license": "BSD",
-  "description": "Site web dédié à l'analyse de sentiments sur Tumblr, réalisé dans le cadre d'un projet de 3ème année à l'INSA de Rennes, avec pour tuteur M. Alexandru COSTAN"
+  "license": "UNLICENSED",
+  "description": "Site web dédié à l'analyse de sentiments sur Tumblr, réalisé dans le cadre d'un projet de 3ème année à l'INSA de Rennes, avec pour tuteur M. Alexandru COSTAN",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://ide.c9.io/esxille/bigdataproject"
+  }
 }
