@@ -40,7 +40,7 @@ app.get('/analyse', function(req, res, next) {
             url += "?nbPosts=" + nbPosts;
         }
         res.redirect(url);
-    }
+    }//
     else {
         next();
     }
