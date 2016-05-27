@@ -27,6 +27,32 @@ exports.getResultsIntermediaires = function(the_tag, timestamp, callback) {
 };
 
 
+exports.test = function(){
+    res = [];
+    
+    console.time("TEST");
+    client.tagged("cat", {
+        limit: 20,
+        before: 1459555932,
+        filter: "text"
+    }, function(err, data) {
+        console.log(data);
+        res.push(data);
+    });
+    
+    client.tagged("cat", {
+        limit: 20,
+        before: 1459555932,
+        filter: "text"
+    }, function(err, data) {
+        console.log(data);
+        res.push(data);
+    });
+    console.timeEnd("TEST");
+    console.log("taille " + res.length);
+
+};
+
 //Accumulation de requêtes, fonction récursive
 exports.getResults = function(the_tag, timestamp, iter, iterTot, list, socket) {
     var deferred = Promise.defer();
@@ -136,20 +162,7 @@ exports.getTFIDF = function(res) {
     return tf_idf;
 }
 
-exports.test = function() {
 
-    var texte = fs.readFileSync("./fichierstests/265,1Mo.txt", 'utf8');
-    //console.log(texte);
-    var array = eval(texte);
-    console.time("test");
-    var lol = traitement(array, null, function(r) {
-                basicAlgo(r["posts"],"AFINN.json", null, true, false, false, false, false, false, function(f) {
-                    console.log(f);
-                });
-            });
-    console.timeEnd("test");
-    return;
-}
 
 //Algorithme basique avec dictionnaire 
 exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, ponderationParPhrase, ponderationParNombre, moyenne, tfidf, callback) {
@@ -215,9 +228,9 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
         var nbMots = 0;
         var scornegation = 1
         var scorintensifier = 1
-            //on boucle sur les phrases (1 si tokenisation par mots, n si tokenisation par phrase)
+            //on boucle sur les phrases/les mots
         for (var j = 0; j < tokens.length; j++) {
-
+            scorePhrase=0;
             if (negation || amplification) {
                 //on transforme les phrases en mots
                 var words = tokenize.tokenize_words(tokens[j]);
@@ -238,6 +251,8 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
 
                     //on attribue le score du dictionnaire
                     var item = dico[obj];
+                    if(item===0)
+                        nbMots--;
                     if (tfidf)
                         item = item * tf_idf.idf[obj] * tf_idf.tf[obj][i]
                         //calcul final du mot dans la phrase
@@ -248,45 +263,45 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
             }
             else {
                 nbMots++;
+                item=0;
                 //donne le score du mot
                 var obj = tokens[j];
                 var item = dico[obj];
                 if (!dico.hasOwnProperty(obj)) continue;
+                if (item===0)
+                    nbMots--;
                 if (tfidf)
                         item = item * tf_idf.idf[obj] * tf_idf.tf[obj][i]
                 scorePhrase += item;
             }
 
-
-            //retire un mot de score nul
-            if (scorePhrase === 0) {
-                nbMots--;
-            }
+        scorePost+=scorePhrase;
+            
         }
 
         //limite l'importance des scores trop hauts 
         if (ponderationParPhrase) {
-            if (scorePhrase > 0) {
-                scorePhrase = Math.log(1 + scorePhrase);
+            if (scorePost > 0) {
+                scorePost = Math.log(1 + scorePost);
             }
             else {
-                scorePhrase = -Math.log(1 + Math.abs(scorePhrase));
+                scorePost = -Math.log(1 + Math.abs(scorePost));
             }
         }
 
         //rajoute de l'influence aux posts likes par beaucoup de gens
         if (ponderationParNombre) {
-            scorePhrase = scorePhrase * Math.log(res[i].note_count + 2);;
+            scorePost = scorePost * Math.log(res[i].note_count + 2);;
         }
-
-        //moyenne le score par post par phrase, en essayant de moyenner le poids des mots
-        ////////////////////////////////////////////////////////////////////////////////////////////
 
         //scorePhrase= scorePhrase/(nbMots*1);
 
         //donne le score global du post
         scorePost += scorePhrase;
-        global_score += scorePhrase;
+        if (moyenne) {
+        scorePost = 20* (scorePost / (nbMots*5));
+    }
+        global_score += scorePost;
 
         //"range" le score du post dans son type
         switch (res[i].type) {
@@ -338,9 +353,7 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
         }
     }
 
-    if (moyenne) {
-        global_score = 100 * (global_score / (res.length));
-    }
+    
 
     //on construit l'objet de résultat
     var resultat = {

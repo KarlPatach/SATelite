@@ -135,6 +135,7 @@ app.get('/analyse/:tag', function(req, res, next) {
 });
 
 app.get('/test', function(req, res, next) {
+    analysis.test();
     if (req.query.tag != undefined) {
         var url = "/test/" + req.query.tag;
         var nbPosts = req.query.nbPosts;
