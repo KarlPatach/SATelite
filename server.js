@@ -164,9 +164,9 @@ app.get('/:page', function(req, res, next) {
             console.error('404 : /' + req.params.page);
             res.render('404.ejs', {
                 page: req.params.page
-            });
-            return;
-        }
+            }); 
+            return; 
+        } 
         res.render(req.params.page + ".ejs", req.query);
     });
 });
