@@ -34,7 +34,7 @@ exports.tokenize_phrases = function (input) {
 	
 	var emoticons = fs.readFileSync('./emoticons.txt','utf8').split(); //TODO supprimer retours chariot
 	for(var i = 0; i<emoticons.length; i++)
-		output.replace(emoticons[i],'.');
+		output.replace(emoticons[i],emoticons[i]+'.');
       
     return output
         .toLowerCase()

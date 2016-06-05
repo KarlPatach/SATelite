@@ -228,6 +228,7 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
         var nbMots = 0;
         var scornegation = 1
         var scorintensifier = 1
+        var count;
             //on boucle sur les phrases/les mots
         for (var j = 0; j < tokens.length; j++) {
             scorePhrase=0;
@@ -242,10 +243,15 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
                     //si le mot fait partie des mots de négation
                     if (negation && negationWords.indexOf(obj) !== -1)
                         scornegation = -scornegation
-                        //si le mot est un intensifier
-                    if (amplification && intensifiers.indexOf(obj) !== -1)
+                        //si le mot est un intensifier, on passe le score à 2 pour le mot suivant
+                    if (amplification && intensifiers.indexOf(obj) !== -1){
                         scorintensifier = 2;
-
+                        count = 0;
+                    }
+                    if(count >1 ){
+                        scorintensifier=1;
+                    }
+                    
                     //si le mot existe dans le dictionnaire
                     if (!dico.hasOwnProperty(obj)) continue;
 
@@ -257,6 +263,8 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
                         item = item * tf_idf.idf[obj] * tf_idf.tf[obj][i]
                         //calcul final du mot dans la phrase
                     scorePhrase += item * scornegation * scorintensifier;
+                    
+                    count++;
 
 
                 }
@@ -291,16 +299,14 @@ exports.basicAlgo = function(res, mon_dico, socket, negation, amplification, pon
 
         //rajoute de l'influence aux posts likes par beaucoup de gens
         if (ponderationParNombre) {
-            scorePost = scorePost * Math.log(res[i].note_count + 2);;
+            scorePost = scorePost * Math.log(res[i].note_count + 2);
         }
 
-        //scorePhrase= scorePhrase/(nbMots*1);
 
         //donne le score global du post
-        scorePost += scorePhrase;
         if (moyenne) {
-        scorePost = 20* (scorePost / (nbMots*5));
-    }
+            scorePost = 20* (scorePost / (nbMots*5));
+        }
         global_score += scorePost;
 
         //"range" le score du post dans son type
